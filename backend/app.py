@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
@@ -36,6 +36,35 @@ def get_incidents():
         })
     return jsonify(result), 200
 
+@app.route("/incidents", methods=["POST"])
+def create_incident():
+    data = request.get_json()
+
+    # Validate required fields
+    required = ["title", "description", "severity", "classification", "submitted_by"]
+    if not all(field in data for field in required):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Check if user exists
+    user = User.query.get(data["submitted_by"])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Create and insert incident
+    incident = Incident(
+        title=data["title"],
+        description=data["description"],
+        severity=data["severity"],
+        classification=data["classification"],
+        status="Open",
+        submitted_by=user.id
+    )
+
+    db.session.add(incident)
+    db.session.commit()
+
+    return jsonify({"message": "Incident created successfully!"}), 201
+
 # Root test route
 @app.route("/")
 def home():
@@ -45,4 +74,4 @@ def home():
 # ✅ Run app
 # ---------------------------
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)
