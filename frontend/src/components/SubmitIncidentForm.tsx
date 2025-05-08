@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -19,16 +19,31 @@ const SubmitIncidentForm = () => {
     description: "",
     severity: "Low",
     classification: "Unclassified",
-    submitted_by: 1,
+    submitted_by: "",
   };
 
   const [form, setForm] = useState(initialForm);
-
+  const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
   });
+
+  // Fetch users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/users");
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to load users:", err);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleChange = (
     e:
@@ -42,16 +57,18 @@ const SubmitIncidentForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const payload = { ...form, submitted_by: Number(form.submitted_by) };
+
     const res = await fetch("http://localhost:5000/incidents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      setForm(initialForm); // ✅ reset form on success
+      setForm(initialForm); // reset form
     }
 
     setSnackbar({
@@ -128,6 +145,23 @@ const SubmitIncidentForm = () => {
             <MenuItem value="Confidential">Confidential</MenuItem>
             <MenuItem value="Secret">Secret</MenuItem>
             <MenuItem value="Top Secret">Top Secret</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Submitted By</InputLabel>
+          <Select
+            name="submitted_by"
+            value={form.submitted_by}
+            onChange={handleChange}
+            label="Submitted By"
+            required
+          >
+            {users.map((user) => (
+              <MenuItem key={user.id} value={user.id.toString()}>
+                {user.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
