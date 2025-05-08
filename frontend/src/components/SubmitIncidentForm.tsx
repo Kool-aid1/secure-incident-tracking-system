@@ -59,10 +59,13 @@ const SubmitIncidentForm = () => {
 
     const payload = { ...form, submitted_by: Number(form.submitted_by) };
 
-    const res = await fetch("http://localhost:5000/incidents", {
+    const res = await fetch("http://localhost:5001/incidents", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(form),
     });
 
     const data = await res.json();

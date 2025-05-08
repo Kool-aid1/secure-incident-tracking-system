@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,11 +8,16 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 
-const LoginForm = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+const RegisterForm = () => {
+  const navigate = useNavigate(); // ✅ move inside the component
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -26,28 +32,29 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:5001/login", {
+    const res = await fetch("http://localhost:5001/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(form),
     });
 
     const data = await res.json();
 
+    setSnackbar({
+      open: true,
+      message: res.ok ? "🎉 Registered successfully!" : `❌ ${data.error}`,
+      severity: res.ok ? "success" : "error",
+    });
+
     if (res.ok) {
-      localStorage.setItem("token", data.token);
-      setSnackbar({
-        open: true,
-        message: "✅ Logged in!",
-        severity: "success",
-      });
-      setTimeout(() => navigate("/incidents"), 1000);
-    } else {
-      setSnackbar({
-        open: true,
-        message: `❌ ${data.error}`,
-        severity: "error",
-      });
+      setForm({ name: "", email: "", password: "" });
+
+      // ✅ redirect after slight delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
     }
   };
 
@@ -66,8 +73,18 @@ const LoginForm = () => {
         }}
       >
         <Typography variant="h5" gutterBottom>
-          Login
+          Register
         </Typography>
+
+        <TextField
+          label="Name"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+          required
+        />
 
         <TextField
           label="Email"
@@ -92,7 +109,7 @@ const LoginForm = () => {
         />
 
         <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-          Log In
+          Register
         </Button>
       </Box>
 
@@ -114,4 +131,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

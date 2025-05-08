@@ -34,12 +34,28 @@ const IncidentTable = () => {
 
   useEffect(() => {
     const fetchIncidents = async () => {
-      const res = await fetch("http://localhost:5000/incidents");
+      const token = localStorage.getItem("token");
+      if (!token) return;  // skip if not logged in
+  
+      const res = await fetch("http://localhost:5001/incidents", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (res.status === 401) {
+        console.warn("Unauthorized. Token missing or expired.");
+        return;
+      }
+  
       const data = await res.json();
       setIncidents(data);
     };
+  
     fetchIncidents();
   }, []);
+  
 
   const handleSort = (property: keyof Incident) => {
     const isAsc = orderBy === property && order === "asc";
