@@ -8,9 +8,10 @@ A full-stack application that allows secure submission and tracking of security 
 
 | Layer     | Technology                       |
 | --------- | -------------------------------- |
-| Frontend  | React, TypeScript, Vite          |
+| Frontend  | React, TypeScript, Vite, MUI     |
 | Backend   | Flask, Flask-SQLAlchemy, psycopg |
 | Database  | PostgreSQL                       |
+| Auth      | JWT, password hashing (Werkzeug) |
 | API Comm. | REST (JSON)                      |
 | Dev Tools | Docker (optional), Vite, npm     |
 
@@ -20,15 +21,23 @@ A full-stack application that allows secure submission and tracking of security 
 
 ```
 sits-project/
-├── backend/          # Flask API
-│   ├── app.py
-│   ├── models.py
-│   └── ...
-├── frontend/         # React UI
-│   ├── src/
-│   │   ├── App.tsx
-│   │   └── components/SubmitIncidentForm.tsx
-│   └── index.html
+├── backend/ # Flask API
+│ ├── app.py # Main server file with routes
+│ ├── models.py # SQLAlchemy models
+│ ├── requirements.txt
+│ └── ...
+├── frontend/ # React UI
+│ ├── src/
+│ │ ├── App.tsx
+│ │ ├── main.tsx
+│ │ └── components/
+│ │ ├── SubmitIncidentForm.tsx
+│ │ ├── IncidentTable.tsx
+│ │ ├── LoginForm.tsx
+│ │ ├── RegisterForm.tsx
+│ │ ├── LogoutButton.tsx
+│ │ └── Header.tsx
+│ └── index.html
 └── README.md
 ```
 
@@ -44,7 +53,11 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 createdb sitsdb
-python app.py  # runs at http://localhost:5000
+python app.py  # runs at http://localhost:5001
+```
+
+```
+Make sure PostgreSQL is running locally with user/password setup: postgres/password.
 ```
 
 ### 2. Frontend (React)
@@ -59,29 +72,36 @@ npm run dev  # runs at http://localhost:5173
 
 ## 🔑 Features
 
-- Submit and track incidents with severity and classification
-- Backend validation and DB integrity checks
-- `/incidents` GET + POST endpoints
-- CORS enabled for frontend/backend communication
+- 🔐 Login/Registration with secure password hashing
+- 🧾 Submit and track incidents with severity/classification
+- 🔒 Protected routes using JWT stored in localStorage
+- 🧠 Searchable & sortable incident table
+- 🚪 Logout button to clear session and redirect
+- 🌐 CORS support for frontend/backend interaction
 
 ---
 
 ## 🔒 Security Notes
 
-- Uses `psycopg[binary]` for Python 3.13 support
-- Default DB: `postgresql+psycopg://postgres:password@localhost:5432/sitsdb`
+- Passwords hashed with generate_password_hash (Werkzeug)
+- JWTs signed using SECRET_KEY, valid for 1 hour
+- Backend protects /incidents with @token_required decorator
+
+Example DB URI:
+postgresql+psycopg://postgres:password@localhost:5432/sitsdb
 
 ---
 
 ## ✅ Next Steps
 
-- Add login/registration with password hashing
-- Role-based access (admin, analyst, auditor)
-- UI improvements (styling, validation)
+- Add role-based access control (admin, analyst, auditor)
+- Implement user dashboard views
+- Add email verification or 2FA
+- Dockerize app for consistent deployment
 
 ---
 
 ## 👤 Author
 
 **Kenny Ly**  
-This project was built for secure IT support and internal incident management.
+Built for secure IT support and internal incident management with modern web tech.
