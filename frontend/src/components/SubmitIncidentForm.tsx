@@ -1,16 +1,42 @@
 import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 
 const SubmitIncidentForm = () => {
-  const [form, setForm] = useState({
+  const initialForm = {
     title: "",
     description: "",
     severity: "Low",
     classification: "Unclassified",
-    submitted_by: 1, // hardcoded for now; replace with actual user later
+    submitted_by: 1,
+  };
+
+  const [form, setForm] = useState(initialForm);
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | SelectChangeEvent<string>
+  ) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,43 +49,108 @@ const SubmitIncidentForm = () => {
     });
 
     const data = await res.json();
+
     if (res.ok) {
-      alert("✅ Incident submitted!");
-    } else {
-      alert(`❌ Error: ${data.error}`);
+      setForm(initialForm); // ✅ reset form on success
     }
+
+    setSnackbar({
+      open: true,
+      message: res.ok ? "✅ Incident submitted!" : `❌ ${data.error}`,
+      severity: res.ok ? "success" : "error",
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "1rem", maxWidth: 500 }}>
-      <h2>Submit Incident</h2>
+    <>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          maxWidth: 500,
+          mx: "auto",
+          mt: 4,
+          p: 3,
+          boxShadow: 3,
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h5" gutterBottom>
+          Submit Incident
+        </Typography>
 
-      <input name="title" value={form.title} onChange={handleChange} placeholder="Title" required />
-      <br />
+        <TextField
+          fullWidth
+          label="Title"
+          name="title"
+          value={form.title}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
 
-      <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" required />
-      <br />
+        <TextField
+          fullWidth
+          label="Description"
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          multiline
+          rows={4}
+          margin="normal"
+          required
+        />
 
-      <label>Severity:</label>
-      <select name="severity" value={form.severity} onChange={handleChange}>
-        <option>Low</option>
-        <option>Medium</option>
-        <option>High</option>
-        <option>Critical</option>
-      </select>
-      <br />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Severity</InputLabel>
+          <Select
+            name="severity"
+            value={form.severity}
+            onChange={handleChange}
+            label="Severity"
+          >
+            <MenuItem value="Low">Low</MenuItem>
+            <MenuItem value="Medium">Medium</MenuItem>
+            <MenuItem value="High">High</MenuItem>
+            <MenuItem value="Critical">Critical</MenuItem>
+          </Select>
+        </FormControl>
 
-      <label>Classification:</label>
-      <select name="classification" value={form.classification} onChange={handleChange}>
-        <option>Unclassified</option>
-        <option>Confidential</option>
-        <option>Secret</option>
-        <option>Top Secret</option>
-      </select>
-      <br />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Classification</InputLabel>
+          <Select
+            name="classification"
+            value={form.classification}
+            onChange={handleChange}
+            label="Classification"
+          >
+            <MenuItem value="Unclassified">Unclassified</MenuItem>
+            <MenuItem value="Confidential">Confidential</MenuItem>
+            <MenuItem value="Secret">Secret</MenuItem>
+            <MenuItem value="Top Secret">Top Secret</MenuItem>
+          </Select>
+        </FormControl>
 
-      <button type="submit">Submit</button>
-    </form>
+        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+          Submit
+        </Button>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
