@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Header from "./Header";
 import {
   Table,
   TableBody,
@@ -35,27 +36,26 @@ const IncidentTable = () => {
   useEffect(() => {
     const fetchIncidents = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return;  // skip if not logged in
-  
+      if (!token) return; // skip if not logged in
+
       const res = await fetch("http://localhost:5001/incidents", {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (res.status === 401) {
         console.warn("Unauthorized. Token missing or expired.");
         return;
       }
-  
+
       const data = await res.json();
       setIncidents(data);
     };
-  
+
     fetchIncidents();
   }, []);
-  
 
   const handleSort = (property: keyof Incident) => {
     const isAsc = orderBy === property && order === "asc";
@@ -78,61 +78,64 @@ const IncidentTable = () => {
   });
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Incident Table
-      </Typography>
+    <>
+      <Header />
+      <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Incident Table
+        </Typography>
 
-      <TextField
-        label="Search by title or severity"
-        variant="outlined"
-        fullWidth
-        sx={{ mb: 2 }}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+        <TextField
+          label="Search by title or severity"
+          variant="outlined"
+          fullWidth
+          sx={{ mb: 2 }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {[
-                "title",
-                "severity",
-                "classification",
-                "status",
-                "submitted_by",
-                "timestamp",
-              ].map((key) => (
-                <TableCell key={key}>
-                  <TableSortLabel
-                    active={orderBy === key}
-                    direction={orderBy === key ? order : "asc"}
-                    onClick={() => handleSort(key as keyof Incident)}
-                  >
-                    {key.replace("_", " ").toUpperCase()}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sorted.map((incident) => (
-              <TableRow key={incident.id}>
-                <TableCell>{incident.title}</TableCell>
-                <TableCell>{incident.severity}</TableCell>
-                <TableCell>{incident.classification}</TableCell>
-                <TableCell>{incident.status}</TableCell>
-                <TableCell>{incident.submitted_by}</TableCell>
-                <TableCell>
-                  {new Date(incident.timestamp).toLocaleString()}
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {[
+                  "title",
+                  "severity",
+                  "classification",
+                  "status",
+                  "submitted_by",
+                  "timestamp",
+                ].map((key) => (
+                  <TableCell key={key}>
+                    <TableSortLabel
+                      active={orderBy === key}
+                      direction={orderBy === key ? order : "asc"}
+                      onClick={() => handleSort(key as keyof Incident)}
+                    >
+                      {key.replace("_", " ").toUpperCase()}
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+            </TableHead>
+            <TableBody>
+              {sorted.map((incident) => (
+                <TableRow key={incident.id}>
+                  <TableCell>{incident.title}</TableCell>
+                  <TableCell>{incident.severity}</TableCell>
+                  <TableCell>{incident.classification}</TableCell>
+                  <TableCell>{incident.status}</TableCell>
+                  <TableCell>{incident.submitted_by}</TableCell>
+                  <TableCell>
+                    {new Date(incident.timestamp).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </>
   );
 };
 
